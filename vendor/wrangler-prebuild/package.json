@@ -1,0 +1,13 @@
+{
+  "name": "wrangler",
+  "version": "4.156.0",
+  "private": true,
+  "bin": {
+    "wrangler": "./bin.cjs",
+    "wrangler2": "./bin.cjs",
+    "cf-wrangler": "./bin.cjs"
+  },
+  "dependencies": {
+    "wrangler-cli": "npm:wrangler@4.156.0"
+  }
+}

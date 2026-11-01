@@ -25,18 +25,10 @@ module.exports = function ensureOpenNextBuild() {
     return;
   }
 
-  const openNextCli = path.join(
-    __dirname,
-    "..",
-    "node_modules",
-    "@opennextjs",
-    "cloudflare",
-    "dist",
-    "cli",
-    "index.js"
-  );
-
-  if (!fs.existsSync(openNextCli)) {
+  let openNextCli;
+  try {
+    openNextCli = require.resolve("@opennextjs/cloudflare/dist/cli/index.js");
+  } catch {
     console.error("Could not find @opennextjs/cloudflare CLI to build the worker.");
     process.exit(1);
   }
