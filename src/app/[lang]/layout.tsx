@@ -1,0 +1,56 @@
+import React from "react";
+import { getLanguageConfig, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from "@/lib/languages";
+import { Header } from "@/components/layout/Header";
+import { BreakingNewsTicker } from "@/components/layout/BreakingNewsTicker";
+import { Footer } from "@/components/layout/Footer";
+import { GoogleAdSenseScript } from "@/components/ads/GoogleAdSenseScript";
+import { prisma } from "@/lib/prisma";
+
+export function generateStaticParams() {
+  return SUPPORTED_LANGUAGES.map((lang) => ({ lang: lang.code }));
+}
+
+export default async function MultilingualLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { lang: string };
+}) {
+  const lang = params.lang || DEFAULT_LANGUAGE;
+  const langConfig = getLanguageConfig(lang);
+
+  // Fetch navigation categories
+  const categories = await prisma.category.findMany({
+    where: { isNav: true },
+    orderBy: { order: "asc" },
+    select: { id: true, name: true, slug: true },
+  });
+
+  // Fetch breaking news articles
+  const breakingArticles = await prisma.article.findMany({
+    where: {
+      isBreaking: true,
+      status: "PUBLISHED",
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      category: { select: { slug: true } },
+    },
+    take: 5,
+  });
+
+  return (
+    <div dir={langConfig.dir} lang={lang} className="flex flex-col min-h-screen">
+      <GoogleAdSenseScript />
+      <Header lang={lang} categories={categories} />
+      <BreakingNewsTicker lang={lang} items={breakingArticles} />
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        {children}
+      </main>
+      <Footer lang={lang} />
+    </div>
+  );
+}

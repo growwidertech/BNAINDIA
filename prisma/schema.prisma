@@ -1,0 +1,274 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  passwordHash  String
+  role          String         @default("READER") // READER, CONTRIBUTOR, REPORTER, EDITOR, ADMIN, SUPERADMIN
+  avatarUrl     String?
+  bio           String?
+  location      String?
+  isActive      Boolean        @default(true)
+  articles      Article[]
+  submissions   Submission[]
+  comments      Comment[]
+  bookmarks     Bookmark[]
+  reactions     Reaction[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  slug         String        @unique
+  name         String
+  description  String?
+  icon         String?
+  order        Int           @default(0)
+  isNav        Boolean       @default(true)
+  color        String?       @default("#dc2626")
+  translations String? // JSON string for multilingual category titles
+  articles     Article[]
+  submissions  Submission[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Article {
+  id               String               @id @default(uuid())
+  slug             String               @unique
+  title            String
+  summary          String
+  content          String
+  featuredImage    String
+  videoUrl         String? // playable video asset URL
+  videoDuration    String?
+  caption          String?
+  categoryId       String
+  category         Category             @relation(fields: [categoryId], references: [id])
+  authorId         String
+  author           User                 @relation(fields: [authorId], references: [id])
+  language         String               @default("en")
+  status           String               @default("PUBLISHED") // DRAFT, SCHEDULED, PUBLISHED, ARCHIVED
+  isBreaking       Boolean              @default(false)
+  isFeatured       Boolean              @default(false)
+  isTrending       Boolean              @default(false)
+  isHeroVideo      Boolean              @default(false)
+  location         String?
+  district         String?
+  state            String?
+  externalVideoUrl String?
+  videoProofPlatform String?
+  videoProofTitle  String?
+  sourceAttribution String?
+  readingTimeMin   Int                  @default(3)
+  viewsCount       Int                  @default(0)
+  likesCount       Int                  @default(0)
+  commentsCount    Int                  @default(0)
+  publishedAt      DateTime             @default(now())
+  scheduledFor     DateTime?
+  translations     ArticleTranslation[]
+  revisions        ArticleRevision[]
+  comments         Comment[]
+  bookmarks        Bookmark[]
+  reactions        Reaction[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+model ArticleTranslation {
+  id         String   @id @default(uuid())
+  articleId  String
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  language   String
+  title      String
+  summary    String
+  content    String
+  slug       String
+  status     String   @default("PUBLISHED") // DRAFT, REVIEW, PUBLISHED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([articleId, language])
+}
+
+model ArticleRevision {
+  id         String   @id @default(uuid())
+  articleId  String
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  title      String
+  content    String
+  summary    String
+  editedById String
+  reason     String?
+  createdAt  DateTime @default(now())
+}
+
+model Submission {
+  id                String    @id @default(uuid())
+  headline          String
+  summary           String
+  content           String
+  categoryId        String
+  category          Category  @relation(fields: [categoryId], references: [id])
+  contributorId     String
+  contributor       User      @relation(fields: [contributorId], references: [id])
+  language          String    @default("en")
+  location          String?
+  district          String?
+  state             String?
+  externalVideoUrl  String?
+  videoProofPlatform String?
+  videoProofTitle   String?
+  sourceAttribution String?
+  featuredImage     String?
+  videoUrl          String?
+  tags              String?
+  declarationSigned Boolean   @default(true)
+  status            String    @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED, RETURNED_FOR_REVISION
+  editorialNotes    String?
+  reviewedById      String?
+  reviewedAt        DateTime?
+  publishedArticleId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Comment {
+  id          String         @id @default(uuid())
+  articleId   String
+  article     Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User           @relation(fields: [userId], references: [id])
+  parentId    String?
+  parent      Comment?       @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[]      @relation("CommentReplies")
+  content     String
+  status      String         @default("APPROVED") // APPROVED, PENDING, REJECTED, FLAGGED
+  likesCount  Int            @default(0)
+  reports     CommentReport[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model CommentReport {
+  id        String   @id @default(uuid())
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String
+  reason    String
+  createdAt DateTime @default(now())
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, articleId])
+}
+
+model Reaction {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  type      String   @default("LIKE") // LIKE, HEART, CLAP
+  createdAt DateTime @default(now())
+
+  @@unique([userId, articleId, type])
+}
+
+model MediaAsset {
+  id           String   @id @default(uuid())
+  filename     String
+  originalName String
+  url          String
+  mimeType     String
+  size         Int
+  type         String // IMAGE, VIDEO, DOCUMENT
+  uploadedById String
+  createdAt    DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  language  String   @default("en")
+  createdAt DateTime @default(now())
+}
+
+model Reporter {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  phone         String
+  location      String
+  district      String?  @default("New Delhi")
+  state         String?  @default("Delhi")
+  qualification String
+  language      String
+  aadhaarUrl    String?
+  panCardUrl    String?
+  photoUrl      String?
+  beat          String?  @default("General Ground Reporting")
+  status        String   @default("APPROVED") // PENDING, APPROVED, REJECTED
+  isVerified    Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AdSetting {
+  id                 String   @id @default("default")
+  adsenseEnabled     Boolean  @default(true)
+  publisherId        String   @default("ca-pub-9876543210123456")
+  autoAdsEnabled     Boolean  @default(true)
+  testMode           Boolean  @default(false)
+  headerSlotId       String?  @default("1010101010")
+  inArticleSlotId    String?  @default("2020202020")
+  sidebarSlotId      String?  @default("3030303030")
+  feedSlotId         String?  @default("4040404040")
+  footerSlotId       String?  @default("5050505050")
+  customHeaderCode   String?
+  customSidebarCode  String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
