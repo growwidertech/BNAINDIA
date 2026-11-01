@@ -18,11 +18,12 @@ import { DEFAULT_LANGUAGE } from "@/lib/languages";
 export const dynamic = "force-dynamic";
 
 interface HomePageProps {
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }
 
 export default async function HomePage({ params }: HomePageProps) {
-  const lang = params.lang || DEFAULT_LANGUAGE;
+  const { lang: langParam } = await params;
+  const lang = langParam || DEFAULT_LANGUAGE;
 
   // 1. Fetch all published articles with category, author, and translations
   const rawArticles = await prisma.article.findMany({

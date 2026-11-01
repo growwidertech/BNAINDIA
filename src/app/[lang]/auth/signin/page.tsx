@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogIn, Key, Mail, AlertCircle, Shield } from "lucide-react";
 import { useAuth } from "@/components/common/AuthProvider";
 import { getDictionary } from "@/lib/languages";
 
-export default function SignInPage({ params }: { params: { lang: string } }) {
+export default function SignInPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = use(params);
   const router = useRouter();
   const { refreshUser } = useAuth();
-  const dict = getDictionary(params.lang);
+  const dict = getDictionary(lang);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +32,7 @@ export default function SignInPage({ params }: { params: { lang: string } }) {
 
       if (res.ok) {
         await refreshUser();
-        router.push(`/${params.lang}`);
+        router.push(`/${lang}`);
       } else {
         const err = await res.json();
         setErrorMsg(err.error || "Login failed");
@@ -153,7 +154,7 @@ export default function SignInPage({ params }: { params: { lang: string } }) {
       <div className="text-center text-xs text-slate-500">
         Don&apos;t have an account?{" "}
         <Link
-          href={`/${params.lang}/auth/signup`}
+          href={`/${lang}/auth/signup`}
           className="text-red-600 font-bold hover:underline"
         >
           Sign Up here

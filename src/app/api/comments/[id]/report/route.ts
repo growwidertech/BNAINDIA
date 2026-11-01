@@ -4,9 +4,10 @@ import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     const { reason } = await req.json();
 
@@ -16,7 +17,7 @@ export async function POST(
 
     const report = await prisma.commentReport.create({
       data: {
-        commentId: params.id,
+        commentId: id,
         userId: user ? user.id : "anonymous",
         reason,
       },
@@ -24,7 +25,7 @@ export async function POST(
 
     // Mark comment as FLAGGED
     await prisma.comment.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { status: "FLAGGED" },
     });
 

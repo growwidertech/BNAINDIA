@@ -4,12 +4,13 @@ import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const comments = await prisma.comment.findMany({
       where: {
-        articleId: params.id,
+        articleId: id,
         parentId: null,
         status: "APPROVED",
       },
@@ -34,9 +35,10 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -54,7 +56,7 @@ export async function POST(
 
     const comment = await prisma.comment.create({
       data: {
-        articleId: params.id,
+        articleId: id,
         userId: user.id,
         content: content.trim(),
         parentId: parentId || null,
@@ -67,7 +69,7 @@ export async function POST(
 
     // Increment article comment count
     await prisma.article.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { commentsCount: { increment: 1 } },
     });
 

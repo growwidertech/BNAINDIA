@@ -7,8 +7,9 @@ import { ProfileManager } from "@/components/profile/ProfileManager";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage({ params }: { params: { lang: string } }) {
-  const lang = params.lang || DEFAULT_LANGUAGE;
+export default async function ProfilePage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: langParam } = await params;
+  const lang = langParam || DEFAULT_LANGUAGE;
   const sessionUser = await getCurrentUser();
 
   if (!sessionUser) {

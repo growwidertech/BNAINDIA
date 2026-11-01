@@ -4,8 +4,9 @@ import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,7 +16,7 @@ export async function POST(
     where: {
       userId_articleId_type: {
         userId: user.id,
-        articleId: params.id,
+        articleId: id,
         type: "LIKE",
       },
     },
@@ -28,7 +29,7 @@ export async function POST(
         where: { id: existing.id },
       }),
       prisma.article.update({
-        where: { id: params.id },
+        where: { id: id },
         data: { likesCount: { decrement: 1 } },
       }),
     ]);
@@ -39,12 +40,12 @@ export async function POST(
       prisma.reaction.create({
         data: {
           userId: user.id,
-          articleId: params.id,
+          articleId: id,
           type: "LIKE",
         },
       }),
       prisma.article.update({
-        where: { id: params.id },
+        where: { id: id },
         data: { likesCount: { increment: 1 } },
       }),
     ]);

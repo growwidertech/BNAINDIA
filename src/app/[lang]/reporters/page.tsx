@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -40,8 +40,9 @@ interface Reporter {
   createdAt: string;
 }
 
-export default function ReportersDirectoryPage({ params }: { params: { lang: string } }) {
-  const dict = getDictionary(params.lang);
+export default function ReportersDirectoryPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = use(params);
+  const dict = getDictionary(lang);
 
   const [reporters, setReporters] = useState<Reporter[]>([]);
   const [selectedState, setSelectedState] = useState<string>("All States");
@@ -128,7 +129,7 @@ export default function ReportersDirectoryPage({ params }: { params: { lang: str
 
           <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
             <Link
-              href={`/${params.lang}/reporter-signup`}
+              href={`/${lang}/reporter-signup`}
               className="px-5 py-3 rounded-xl bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center space-x-2 shrink-0"
             >
               <UserPlus className="w-4 h-4" />
@@ -272,7 +273,7 @@ export default function ReportersDirectoryPage({ params }: { params: { lang: str
             : "nationwide"}
         </div>
         <Link
-          href={`/${params.lang}/reporter-signup`}
+          href={`/${lang}/reporter-signup`}
           className="text-[#ea580c] font-bold hover:underline hidden sm:inline"
         >
           + Submit Your Reporter Application

@@ -10,11 +10,12 @@ import { getDictionary, DEFAULT_LANGUAGE } from "@/lib/languages";
 export const dynamic = "force-dynamic";
 
 interface BookmarksPageProps {
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }
 
 export default async function BookmarksPage({ params }: BookmarksPageProps) {
-  const lang = params.lang || DEFAULT_LANGUAGE;
+  const { lang: langParam } = await params;
+  const lang = langParam || DEFAULT_LANGUAGE;
   const dict = getDictionary(lang);
   const user = await getCurrentUser();
 

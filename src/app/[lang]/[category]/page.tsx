@@ -10,18 +10,19 @@ import { getDictionary, DEFAULT_LANGUAGE } from "@/lib/languages";
 export const dynamic = "force-dynamic";
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     lang: string;
     category: string;
-  };
+  }>;
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const lang = params.lang || DEFAULT_LANGUAGE;
+  const { lang: langParam, category: categorySlug } = await params;
+  const lang = langParam || DEFAULT_LANGUAGE;
   const dict = getDictionary(lang);
 
   const category = await prisma.category.findUnique({
-    where: { slug: params.category },
+    where: { slug: categorySlug },
   });
 
   if (!category) {

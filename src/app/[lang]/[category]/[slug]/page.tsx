@@ -13,16 +13,17 @@ import { getDictionary, DEFAULT_LANGUAGE } from "@/lib/languages";
 export const dynamic = "force-dynamic";
 
 interface ArticleDetailsPageProps {
-  params: {
+  params: Promise<{
     lang: string;
     category: string;
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: ArticleDetailsPageProps) {
+  const { slug } = await params;
   const article = await prisma.article.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     select: { title: true, summary: true, featuredImage: true },
   });
 
@@ -41,11 +42,12 @@ export async function generateMetadata({ params }: ArticleDetailsPageProps) {
 }
 
 export default async function ArticleDetailsPage({ params }: ArticleDetailsPageProps) {
-  const lang = params.lang || DEFAULT_LANGUAGE;
+  const { lang: langParam, slug } = await params;
+  const lang = langParam || DEFAULT_LANGUAGE;
   const dict = getDictionary(lang);
 
   const article = await prisma.article.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: {
       category: true,
       author: { select: { id: true, name: true, role: true, avatarUrl: true, bio: true } },

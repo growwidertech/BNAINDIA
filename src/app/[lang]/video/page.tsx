@@ -8,11 +8,12 @@ import { getDictionary, DEFAULT_LANGUAGE } from "@/lib/languages";
 export const dynamic = "force-dynamic";
 
 interface VideoPageProps {
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }
 
 export default async function VideoNewsPage({ params }: VideoPageProps) {
-  const lang = params.lang || DEFAULT_LANGUAGE;
+  const { lang: langParam } = await params;
+  const lang = langParam || DEFAULT_LANGUAGE;
   const dict = getDictionary(lang);
 
   const videoArticles = await prisma.article.findMany({

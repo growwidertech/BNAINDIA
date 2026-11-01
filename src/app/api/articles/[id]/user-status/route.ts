@@ -4,8 +4,9 @@ import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ hasLiked: false, isBookmarked: false });
@@ -16,7 +17,7 @@ export async function GET(
       where: {
         userId_articleId_type: {
           userId: user.id,
-          articleId: params.id,
+          articleId: id,
           type: "LIKE",
         },
       },
@@ -25,7 +26,7 @@ export async function GET(
       where: {
         userId_articleId: {
           userId: user.id,
-          articleId: params.id,
+          articleId: id,
         },
       },
     }),

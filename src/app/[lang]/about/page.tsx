@@ -2,7 +2,8 @@ import React from "react";
 import Link from "next/link";
 import { Shield, Award, Users, Globe2, Building2 } from "lucide-react";
 
-export default function AboutPage({ params }: { params: { lang: string } }) {
+export default async function AboutPage({ params }: { params: Promise<{ lang: string }> }) {
+  await params;
   return (
     <div className="max-w-4xl mx-auto py-10 space-y-10">
       {/* Title */}

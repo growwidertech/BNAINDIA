@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { Tv, Radio, Calendar, Volume2, ShieldCheck, Share2 } from "lucide-react";
 import { getDictionary } from "@/lib/languages";
 
 interface LiveTvPageProps {
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }
 
 export default function LiveTvPage({ params }: LiveTvPageProps) {
-  const dict = getDictionary(params.lang);
+  const { lang } = use(params);
+  const dict = getDictionary(lang);
   const [isPlaying, setIsPlaying] = useState(true);
 
   // Sample broadcast video stream URL

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -42,10 +42,11 @@ interface SubmissionItem {
   publishedArticleSlug?: string | null;
 }
 
-export default function SubmitNewsPage({ params }: { params: { lang: string } }) {
+export default function SubmitNewsPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = use(params);
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const dict = getDictionary(params.lang);
+  const dict = getDictionary(lang);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
@@ -65,7 +66,7 @@ export default function SubmitNewsPage({ params }: { params: { lang: string } })
     summary: "",
     content: "",
     categoryId: "",
-    language: params.lang || "en",
+    language: lang || "en",
     state: "Delhi (NCT)",
     district: "New Delhi",
     location: "",
@@ -181,7 +182,7 @@ export default function SubmitNewsPage({ params }: { params: { lang: string } })
           summary: "",
           content: "",
           categoryId: categories[0]?.id || "",
-          language: params.lang || "en",
+          language: lang || "en",
           state: selectedState,
           district: availableDistricts[0] || "",
           location: "",
@@ -251,7 +252,7 @@ export default function SubmitNewsPage({ params }: { params: { lang: string } })
             <span>You need to be signed in to submit news reports and track your editorial approvals.</span>
           </div>
           <Link
-            href={`/${params.lang}/auth/signin?redirect=/${params.lang}/submit-news`}
+            href={`/${lang}/auth/signin?redirect=/${lang}/submit-news`}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shrink-0 transition text-center shadow"
           >
             Sign In Now

@@ -8,16 +8,18 @@ import { getDictionary, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "@/lib/lang
 export const dynamic = "force-dynamic";
 
 interface SearchPageProps {
-  params: { lang: string };
-  searchParams: { q?: string; category?: string; sort?: string };
+  params: Promise<{ lang: string }>;
+  searchParams: Promise<{ q?: string; category?: string; sort?: string }>;
 }
 
 export default async function SearchPage({ params, searchParams }: SearchPageProps) {
-  const lang = params.lang || DEFAULT_LANGUAGE;
+  const { lang: langParam } = await params;
+  const resolvedSearch = await searchParams;
+  const lang = langParam || DEFAULT_LANGUAGE;
   const dict = getDictionary(lang);
-  const query = searchParams.q || "";
-  const selectedCategory = searchParams.category || "";
-  const sortBy = searchParams.sort || "latest";
+  const query = resolvedSearch.q || "";
+  const selectedCategory = resolvedSearch.category || "";
+  const sortBy = resolvedSearch.sort || "latest";
 
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },

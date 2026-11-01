@@ -15,9 +15,10 @@ export default async function MultilingualLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }) {
-  const lang = params.lang || DEFAULT_LANGUAGE;
+  const { lang: langParam } = await params;
+  const lang = langParam || DEFAULT_LANGUAGE;
   const langConfig = getLanguageConfig(lang);
 
   // Fetch navigation categories

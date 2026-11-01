@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ["images.unsplash.com", "via.placeholder.com"],
     remotePatterns: [
       {
         protocol: "https",
@@ -11,5 +10,12 @@ const nextConfig = {
     ],
   },
 };
+
+try {
+  const { initOpenNextCloudflareForDev } = require("@opennextjs/cloudflare");
+  initOpenNextCloudflareForDev();
+} catch {
+  // OpenNext is optional for a plain local Next.js run.
+}
 
 module.exports = nextConfig;

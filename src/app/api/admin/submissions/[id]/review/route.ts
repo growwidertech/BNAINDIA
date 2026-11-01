@@ -7,9 +7,10 @@ export const dynamic = "force-dynamic";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user || !hasRequiredRole(user.role, "EDITOR")) {
       return NextResponse.json({ error: "Forbidden: Editor privileges required." }, { status: 403 });
@@ -18,7 +19,7 @@ export async function POST(
     const { action, editorialNotes } = await req.json();
 
     const submission = await prisma.submission.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { category: true, contributor: true },
     });
 

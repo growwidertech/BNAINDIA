@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import Link from "next/link";
 import {
   UserCheck,
@@ -22,11 +22,12 @@ import { SUPPORTED_LANGUAGES, getDictionary } from "@/lib/languages";
 import { INDIAN_STATES_DISTRICTS, getAllStates, getDistrictsForState } from "@/lib/districts";
 
 interface ReporterSignupPageProps {
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }
 
 export default function ReporterSignupPage({ params }: ReporterSignupPageProps) {
-  const dict = getDictionary(params.lang);
+  const { lang } = use(params);
+  const dict = getDictionary(lang);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -206,7 +207,7 @@ export default function ReporterSignupPage({ params }: ReporterSignupPageProps) 
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
             <Link
-              href={`/${params.lang}/reporters`}
+              href={`/${lang}/reporters`}
               className="w-full sm:w-auto px-6 py-3 bg-[#ea580c] hover:bg-[#c2410c] text-white rounded-xl font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center space-x-2"
             >
               <span>View Journalists Directory</span>
@@ -565,7 +566,7 @@ export default function ReporterSignupPage({ params }: ReporterSignupPageProps) 
           {/* Submit Button */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-slate-800">
             <Link
-              href={`/${params.lang}/reporters`}
+              href={`/${lang}/reporters`}
               className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
             >
               ← Browse Existing Reporters

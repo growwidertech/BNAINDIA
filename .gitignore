@@ -10,6 +10,9 @@
 /.next/
 /out/
 /build
+/.open-next
+/.wrangler
+.dev.vars
 
 # Local environment secrets
 .env*.local

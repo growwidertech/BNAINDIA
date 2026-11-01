@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const updated = await prisma.comment.update({
-      where: { id: params.id },
+      where: { id },
       data: { likesCount: { increment: 1 } },
     });
     return NextResponse.json({ success: true, likesCount: updated.likesCount });
