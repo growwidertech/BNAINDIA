@@ -7,6 +7,18 @@
     "wrangler2": "./bin.cjs",
     "cf-wrangler": "./bin.cjs"
   },
+  "main": "./shim.cjs",
+  "exports": {
+    ".": {
+      "import": "./shim.mjs",
+      "require": "./shim.cjs",
+      "default": "./shim.mjs"
+    },
+    "./experimental-config": {
+      "import": "./experimental-config.mjs"
+    },
+    "./package.json": "./package.json"
+  },
   "dependencies": {
     "wrangler-cli": "npm:wrangler@4.156.0"
   }

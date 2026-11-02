@@ -1,8 +1,6 @@
 "use strict";
 
 const { spawnSync } = require("child_process");
-const fs = require("fs");
-const path = require("path");
 
 module.exports = function ensureOpenNextBuild() {
   const args = process.argv.slice(2);
@@ -15,16 +13,6 @@ module.exports = function ensureOpenNextBuild() {
     return;
   }
 
-  const compiledConfig = path.join(
-    process.cwd(),
-    ".open-next",
-    ".build",
-    "open-next.config.edge.mjs"
-  );
-  if (fs.existsSync(compiledConfig)) {
-    return;
-  }
-
   let openNextCli;
   try {
     openNextCli = require.resolve("@opennextjs/cloudflare/dist/cli/index.js");
@@ -34,7 +22,7 @@ module.exports = function ensureOpenNextBuild() {
   }
 
   process.env.DATABASE_URL ||= "file:./prisma/dev.db";
-  console.log("OpenNext output missing; running `opennextjs-cloudflare build` first...");
+  console.log("Running `opennextjs-cloudflare build` before wrangler deploy...");
   const result = spawnSync(process.execPath, [openNextCli, "build"], {
     stdio: "inherit",
     env: process.env,

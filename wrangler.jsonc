@@ -1,6 +1,5 @@
 {
   "$schema": "node_modules/wrangler-cli/config-schema.json",
-  // Cloudflare Workers Builds: set Build command to `npm run build:worker` (or `npx opennextjs-cloudflare build`).
   "name": "bnaindia",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-10-23",
