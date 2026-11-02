@@ -21,27 +21,36 @@ export default async function MultilingualLayout({
   const lang = langParam || DEFAULT_LANGUAGE;
   const langConfig = getLanguageConfig(lang);
 
-  // Fetch navigation categories
-  const categories = await prisma.category.findMany({
-    where: { isNav: true },
-    orderBy: { order: "asc" },
-    select: { id: true, name: true, slug: true },
-  });
-
-  // Fetch breaking news articles
-  const breakingArticles = await prisma.article.findMany({
-    where: {
-      isBreaking: true,
-      status: "PUBLISHED",
-    },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      category: { select: { slug: true } },
-    },
-    take: 5,
-  });
+  let categories: { id: string; name: string; slug: string }[] = [];
+  let breakingArticles: {
+    id: string;
+    title: string;
+    slug: string;
+    category: { slug: string };
+  }[] = [];
+  try {
+    categories = await prisma.category.findMany({
+      where: { isNav: true },
+      orderBy: { order: "asc" },
+      select: { id: true, name: true, slug: true },
+    });
+    breakingArticles = await prisma.article.findMany({
+      where: {
+        isBreaking: true,
+        status: "PUBLISHED",
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        category: { select: { slug: true } },
+      },
+      take: 5,
+    });
+  } catch {
+    categories = [];
+    breakingArticles = [];
+  }
 
   return (
     <div dir={langConfig.dir} lang={lang} className="flex flex-col min-h-screen">

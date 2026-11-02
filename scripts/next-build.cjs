@@ -2,7 +2,10 @@
 
 const { spawnSync } = require("child_process");
 
-process.env.DATABASE_URL ||= "file:./prisma/dev.db";
+const currentUrl = process.env.DATABASE_URL || "";
+if (!currentUrl || currentUrl.startsWith("file:")) {
+  process.env.DATABASE_URL = "file:./prisma/dev.db";
+}
 
 function run(command, args) {
   const result = spawnSync(command, args, {
