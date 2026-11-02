@@ -1,12 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
-  const articles = await prisma.article.findMany({
-    where: { status: "PUBLISHED" },
-    select: { slug: true, language: true, updatedAt: true, category: { select: { slug: true } } },
-    take: 100,
-  });
+  let articles: {
+    slug: string;
+    language: string;
+    updatedAt: Date;
+    category: { slug: string };
+  }[] = [];
+  try {
+    articles = await prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true, language: true, updatedAt: true, category: { select: { slug: true } } },
+      take: 100,
+    });
+  } catch {
+    articles = [];
+  }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://antigravitynews.com";
 

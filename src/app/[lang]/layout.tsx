@@ -6,6 +6,8 @@ import { Footer } from "@/components/layout/Footer";
 import { GoogleAdSenseScript } from "@/components/ads/GoogleAdSenseScript";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   return SUPPORTED_LANGUAGES.map((lang) => ({ lang: lang.code }));
 }
