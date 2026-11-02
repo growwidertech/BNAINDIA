@@ -4,7 +4,9 @@
 require("../../scripts/ensure-opennext-build.cjs")();
 
 const { spawn } = require("child_process");
-const wranglerBin = require.resolve("wrangler-cli/bin/wrangler.js");
+const path = require("path");
+const wranglerRoot = path.dirname(require.resolve("wrangler-cli/package.json"));
+const wranglerBin = path.join(wranglerRoot, "bin", "wrangler.js");
 
 const child = spawn(
   process.execPath,
