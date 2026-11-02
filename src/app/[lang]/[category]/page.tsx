@@ -1,11 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { formatTimeAgo } from "@/lib/utils";
 import { Clock, MessageSquare, ArrowLeft } from "lucide-react";
 import { GoogleAdSlot } from "@/components/ads/GoogleAdSlot";
 import { getDictionary, DEFAULT_LANGUAGE } from "@/lib/languages";
+import { getCategoryBySlug, getPublishedArticles } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -21,37 +21,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const lang = langParam || DEFAULT_LANGUAGE;
   const dict = getDictionary(lang);
 
-  const category = await prisma.category.findUnique({
-    where: { slug: categorySlug },
-  });
+  const category = getCategoryBySlug(categorySlug);
 
   if (!category) {
     notFound();
   }
 
-  const articles = await prisma.article.findMany({
-    where: {
-      categoryId: category.id,
-      status: "PUBLISHED",
-    },
-    include: {
-      author: { select: { name: true } },
-      translations: { where: { language: lang } },
-    },
-    orderBy: { publishedAt: "desc" },
-  });
-
-  const localizedArticles = articles.map((art) => {
-    const trans = art.translations[0];
-    if (trans) {
-      return {
-        ...art,
-        title: trans.title,
-        summary: trans.summary,
-      };
-    }
-    return art;
-  });
+  const localizedArticles = getPublishedArticles(lang).filter(
+    (article) => article.categoryId === category.id
+  );
 
   return (
     <div className="space-y-6 my-6">

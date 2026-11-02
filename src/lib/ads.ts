@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { isCloudflareWorker, prisma } from "@/lib/prisma";
 
 export interface AdSettingData {
   id: string;
@@ -31,6 +31,9 @@ export const DEFAULT_AD_SETTINGS: AdSettingData = {
 };
 
 export async function getAdSettings(): Promise<AdSettingData> {
+  if (isCloudflareWorker()) {
+    return DEFAULT_AD_SETTINGS;
+  }
   try {
     let settings = await prisma.adSetting.findUnique({
       where: { id: "default" },

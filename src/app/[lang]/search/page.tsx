@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { Search, Clock, ArrowRight } from "lucide-react";
+import { getAllCategories, searchArticles } from "@/lib/content";
 import { formatTimeAgo } from "@/lib/utils";
 import { getDictionary, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "@/lib/languages";
 
@@ -21,35 +21,8 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
   const selectedCategory = resolvedSearch.category || "";
   const sortBy = resolvedSearch.sort || "latest";
 
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-  });
-
-  const where: any = {
-    status: "PUBLISHED",
-  };
-
-  if (query.trim()) {
-    where.OR = [
-      { title: { contains: query.trim() } },
-      { summary: { contains: query.trim() } },
-      { content: { contains: query.trim() } },
-    ];
-  }
-
-  if (selectedCategory) {
-    where.category = { slug: selectedCategory };
-  }
-
-  const articles = await prisma.article.findMany({
-    where,
-    include: {
-      category: true,
-      author: { select: { name: true } },
-    },
-    orderBy: sortBy === "views" ? { viewsCount: "desc" } : { publishedAt: "desc" },
-    take: 30,
-  });
+  const categories = getAllCategories();
+  const articles = searchArticles(lang, query, selectedCategory, sortBy);
 
   return (
     <div className="max-w-5xl mx-auto py-8 space-y-6">

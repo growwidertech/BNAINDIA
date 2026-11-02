@@ -1,8 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { formatDate, formatTimeAgo } from "@/lib/utils";
+import { getArticleBySlug, getRelatedArticles } from "@/lib/content";
 import { Clock, Eye, User as UserIcon, ArrowLeft, ArrowRight, Share2 } from "lucide-react";
 import { ArticleInteractions } from "@/components/articles/ArticleInteractions";
 import { ArticleComments } from "@/components/articles/ArticleComments";
@@ -21,11 +21,8 @@ interface ArticleDetailsPageProps {
 }
 
 export async function generateMetadata({ params }: ArticleDetailsPageProps) {
-  const { slug } = await params;
-  const article = await prisma.article.findUnique({
-    where: { slug },
-    select: { title: true, summary: true, featuredImage: true },
-  });
+  const { slug, lang } = await params;
+  const article = getArticleBySlug(slug, lang || DEFAULT_LANGUAGE);
 
   if (!article) return { title: "Article Not Found | Antigravity News" };
 
@@ -46,55 +43,17 @@ export default async function ArticleDetailsPage({ params }: ArticleDetailsPageP
   const lang = langParam || DEFAULT_LANGUAGE;
   const dict = getDictionary(lang);
 
-  const article = await prisma.article.findUnique({
-    where: { slug },
-    include: {
-      category: true,
-      author: { select: { id: true, name: true, role: true, avatarUrl: true, bio: true } },
-      translations: { where: { language: lang } },
-      comments: {
-        where: { parentId: null, status: "APPROVED" },
-        include: {
-          user: { select: { id: true, name: true, role: true, avatarUrl: true } },
-          replies: {
-            where: { status: "APPROVED" },
-            include: {
-              user: { select: { id: true, name: true, role: true, avatarUrl: true } },
-            },
-            orderBy: { createdAt: "asc" },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      },
-    },
-  });
+  const article = getArticleBySlug(slug, lang);
 
   if (!article) {
     notFound();
   }
 
-  // Check localized translation
   const trans = article.translations[0];
   const title = trans ? trans.title : article.title;
   const summary = trans ? trans.summary : article.summary;
   const content = trans ? trans.content : article.content;
-
-  // Increment view counter asynchronously
-  await prisma.article.update({
-    where: { id: article.id },
-    data: { viewsCount: { increment: 1 } },
-  }).catch(() => {});
-
-  // Related articles in same category
-  const relatedArticles = await prisma.article.findMany({
-    where: {
-      categoryId: article.categoryId,
-      id: { not: article.id },
-      status: "PUBLISHED",
-    },
-    take: 3,
-    orderBy: { publishedAt: "desc" },
-  });
+  const relatedArticles = getRelatedArticles(article.categoryId, article.id, lang);
 
   return (
     <article className="max-w-4xl mx-auto py-6">

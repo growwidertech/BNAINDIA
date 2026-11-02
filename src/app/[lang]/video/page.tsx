@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { Video, Play, Clock, ArrowRight } from "lucide-react";
+import { getVideoArticles } from "@/lib/content";
 import { formatTimeAgo } from "@/lib/utils";
 import { getDictionary, DEFAULT_LANGUAGE } from "@/lib/languages";
 
@@ -16,17 +16,7 @@ export default async function VideoNewsPage({ params }: VideoPageProps) {
   const lang = langParam || DEFAULT_LANGUAGE;
   const dict = getDictionary(lang);
 
-  const videoArticles = await prisma.article.findMany({
-    where: {
-      status: "PUBLISHED",
-      videoUrl: { not: null },
-    },
-    include: {
-      category: true,
-      author: { select: { name: true } },
-    },
-    orderBy: { publishedAt: "desc" },
-  });
+  const videoArticles = getVideoArticles(lang);
 
   const featured = videoArticles[0];
   const others = videoArticles.slice(1);

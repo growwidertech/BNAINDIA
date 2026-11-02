@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { BreakingNewsTicker } from "@/components/layout/BreakingNewsTicker";
 import { Footer } from "@/components/layout/Footer";
 import { GoogleAdSenseScript } from "@/components/ads/GoogleAdSenseScript";
-import { prisma } from "@/lib/prisma";
+import { getBreakingArticles, getNavCategories } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -22,37 +22,8 @@ export default async function MultilingualLayout({
   const { lang: langParam } = await params;
   const lang = langParam || DEFAULT_LANGUAGE;
   const langConfig = getLanguageConfig(lang);
-
-  let categories: { id: string; name: string; slug: string }[] = [];
-  let breakingArticles: {
-    id: string;
-    title: string;
-    slug: string;
-    category: { slug: string };
-  }[] = [];
-  try {
-    categories = await prisma.category.findMany({
-      where: { isNav: true },
-      orderBy: { order: "asc" },
-      select: { id: true, name: true, slug: true },
-    });
-    breakingArticles = await prisma.article.findMany({
-      where: {
-        isBreaking: true,
-        status: "PUBLISHED",
-      },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        category: { select: { slug: true } },
-      },
-      take: 5,
-    });
-  } catch {
-    categories = [];
-    breakingArticles = [];
-  }
+  const categories = getNavCategories();
+  const breakingArticles = getBreakingArticles(lang);
 
   return (
     <div dir={langConfig.dir} lang={lang} className="flex flex-col min-h-screen">
